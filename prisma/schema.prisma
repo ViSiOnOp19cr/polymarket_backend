@@ -16,11 +16,11 @@ datasource db {
 
 model User {
   id            Int   @id @default(autoincrement()) 
-  email         String
+  email         String    @unique
   password      String
-  isAdmin       Boolean
+  isAdmin       Boolean?
   bets          Bets[]
-  balance       Int 
+  balance       Int
   transaction   Transactions[]
   market         Market[]
 }
