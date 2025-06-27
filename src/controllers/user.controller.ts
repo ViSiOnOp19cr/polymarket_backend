@@ -111,4 +111,25 @@ export const SignIn = async(req: Request, res: Response, next: NextFunction): Pr
         })
     }
 }
+export const Me = async(req:Request, res:Response, next:NextFunction): Promise<Response<any> | void> => {
+    try{
+        const user = await prisma.user.findUnique({
+            where:{
+                id: req.userId
+            }
+        })
+        if(!user){
+            return res.status(400).json({
+                message:"user not found"
+            })
+        }
+        return res.status(200).json({
+            message:"user found",
+            user: user
+        })
+    }
+    catch(error){
+        console.error('Me error:', error);
+    }
+}
 
