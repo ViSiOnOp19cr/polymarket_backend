@@ -15,24 +15,66 @@ datasource db {
 }
 
 model User {
-  id            Int   @default(autoincrement()) @unique
+  id            Int   @id @default(autoincrement()) 
   email         String
   password      String
   isAdmin       Boolean
   bets          Bets[]
-
+  balance       Int 
+  transaction   Transactions[]
+  market         Market[]
 }
 
 model Bets {
-  id            Int     @default(autoincrement())  @unique
+  id            Int   @id   @default(autoincrement())  
   type          String 
   userId        Int   
   user          User     @relation(fields:[userId], references: [id])
-
+  marketId      Int 
+  status        BetStatus
+  amount        Int 
+  outcome_chosen      BetOutcome
+  isLocked      Boolean
+  market        Market     @relation(fields:[marketId], references:[id])
+  createdAt    DateTime     @default(now())
 }
 
 model Market {
-  id            Int        @default(autoincrement())  @unique
+  id            Int      @id   @default(autoincrement())  
   description   String
+  title         String
   isOpen        Boolean
+  end_time      DateTime
+  bets          Bets[]
+  outcome       BetOutcome?
+  createdAt    DateTime    @default(now())
+  creatorId     Int
+  creator          User    @relation(fields: [creatorId], references: [id])
+}
+
+model Transactions {
+  id          Int      @id @default(autoincrement())  
+  type        TransactionType
+  amount      Int 
+  userId      Int 
+  user        User    @relation(fields:[userId],references:[id])
+  createdAt   DateTime    @default(now())
+}
+
+enum BetStatus {
+  PENDING
+  WON
+  LOST
+}
+
+enum BetOutcome {
+  YES
+  NO
+}
+
+enum TransactionType {
+  DEPOSIT
+  WITHDRAW
+  BET_PLACED
+  BET_WON
 }
