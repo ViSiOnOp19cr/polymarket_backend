@@ -139,7 +139,8 @@ export const GetallbetsMarket = async(req:Request, res:Response, next:NextFuncti
     const userId = req.userId;
     const bets = await prisma.bets.findMany({
         where:{
-            id : parseInt(req.params.id)
+            id : parseInt(req.params.id),
+            userId
         }
     });
     res.status(200).json({bets});

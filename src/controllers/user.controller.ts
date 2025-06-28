@@ -158,4 +158,42 @@ export const Me = async (req: Request, res: Response, next: NextFunction): Promi
         });
     }
 }
+export const leaderboard = async(req:Request, res:Response, next:NextFunction)=>{
+    try{
+        const bets = await prisma.bets.findMany({
+            where:{status:"WON"},
+            select:{
+                userId:true,
+                amount:true,
+                odds:true
+            }
+        });
+        const userMap:Record<string, number> = {};
+        for (const bet of bets){
+            const winnings = Math.floor(bet.amount * bet.odds);
+            userMap[bet.userId] = (userMap[bet.userId] || 0) + winnings;
+        }
+        const userIds = Object.keys(userMap);
+        const users = await prisma.user.findMany({
+            where:{id:{in:userIds}},
+            select:{
+                id:true,
+                email:true
+            }
+        });
+        const leaderboards = users.map(user=>({
+            userId:user.id,
+            email:user.email,
+            totalWinnings:userMap[user.id] || 0      
+        }));
+        leaderboards.sort((a,b) =>b.totalWinnings - a.totalWinnings);
+        res.status(200).json({
+            leaderboard
+        });
+    }catch(error){
+        res.status(500).json({
+            message:"Internal server error"
+        })
+    }
+}
 

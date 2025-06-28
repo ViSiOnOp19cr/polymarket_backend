@@ -7,5 +7,6 @@ export const userRoutes = express.Router();
 userRoutes.post("/signup", SignUp);
 userRoutes.post("/signin", SignIn);
 userRoutes.get("/me", userMiddlewares, Me);
+userRoutes.get("/leaderboard", userMiddlewares)
 
 export default userRoutes;
