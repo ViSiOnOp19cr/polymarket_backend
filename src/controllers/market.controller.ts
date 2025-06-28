@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from "express";
 import { prisma } from "../lib/db";
-import { Prisma } from "../generated/prisma";
+
+import { MarketCatagory } from "@prisma/client";
 
 export const createMarket = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
@@ -26,7 +27,8 @@ export const createMarket = async (req: Request, res: Response, next: NextFuncti
                 end_time: new Date(end_time),
                 creator: {
                     connect: { id: userId }
-                }
+                },
+                isLocked: false
             }
         });
 
@@ -55,7 +57,7 @@ export const updateMarket = async (req: Request, res: Response, next: NextFuncti
         const { title, description, end_time, catagory } = req.body;
         const market = await prisma.market.update({
             where: {
-                id: req.params.id
+                id: parseInt(req.params.id)
             },
             data: {
                 title,
@@ -85,7 +87,7 @@ export const getMarketById = async (req: Request, res: Response, next: NextFunct
     try {
         const market = await prisma.market.findUnique({
             where: {
-                id: req.params.id
+                id: parseInt(req.params.id)
             }
         })
         if (!market) {
@@ -138,7 +140,7 @@ export const LockBets = async (req: Request, res: Response, next: NextFunction):
         //check if market exists
         const market = await prisma.market.findUnique({
             where: {
-                id: req.params.id
+                id: parseInt(req.params.id)
             }
         })
         if (!market) {
@@ -151,7 +153,7 @@ export const LockBets = async (req: Request, res: Response, next: NextFunction):
         }
         const lockedMarket = await prisma.market.update({
             where: {
-                id: req.params.id
+                id: parseInt(req.params.id)
             },
             data: {
                 isLocked: true
@@ -166,7 +168,7 @@ export const LockBets = async (req: Request, res: Response, next: NextFunction):
 }
 export const getMarketsByCatagory = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
-        const catagory = req.params.catagory;
+        const catagory = req.params.catagory as MarketCatagory;
         const markets = await prisma.market.findMany({
             where: {
                 catagory: catagory
@@ -230,7 +232,7 @@ export const ResolveMarket = async (req: Request, res: Response, next: NextFunct
         }
 
         //begin transaction.
-        await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
+        await prisma.$transaction(async (tx) => {
             //update market
             await tx.market.update({
                 where: {

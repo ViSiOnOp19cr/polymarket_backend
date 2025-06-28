@@ -34,7 +34,6 @@ model Bets {
   amount        Int 
   outcome_chosen      BetOutcome
   odds          Float    // Odds locked in when this bet was placed
-  isLocked      Boolean
   market        Market     @relation(fields:[marketId], references:[id])
   createdAt    DateTime     @default(now())
 }
