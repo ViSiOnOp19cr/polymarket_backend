@@ -6,6 +6,10 @@ import { prisma } from "../lib/db";
 export const Placebets = async(req:Request, res:Response, next:NextFunction) =>{
     try{
         const userId = req.userId;
+        if (!userId) {
+            res.status(401).json({ message: "Unauthorized" });
+            return;
+        }
         const {amount , marketId , outcome_chosen} = req.body;
 
         if(!["YES","NO"].includes(outcome_chosen)){
@@ -67,12 +71,13 @@ export const Placebets = async(req:Request, res:Response, next:NextFunction) =>{
         await prisma.$transaction(async(tx)=>{
             await tx.bets.create({
                 data:{
+                    type: 'MARKET_BET',
                     userId,
                     marketId,
                     amount,
                     outcome_chosen,
                     odds,
-                    status:'PENDING',
+                    status:'PENDING'
                 }
             });
             // deduct balance from user
@@ -123,6 +128,10 @@ export const Placebets = async(req:Request, res:Response, next:NextFunction) =>{
 export const Getallbets = async(req:Request, res:Response, next:NextFunction)=>{
     try{
         const userId = req.userId;
+        if (!userId) {
+            res.status(401).json({ message: "Unauthorized" });
+            return;
+        }
         const bets = await prisma.bets.findMany({
             where:{
                 userId,
@@ -137,9 +146,13 @@ export const Getallbets = async(req:Request, res:Response, next:NextFunction)=>{
 export const GetallbetsMarket = async(req:Request, res:Response, next:NextFunction) =>{
     try{
     const userId = req.userId;
+    if (!userId) {
+        res.status(401).json({ message: "Unauthorized" });
+        return;
+    }
     const bets = await prisma.bets.findMany({
         where:{
-            id : parseInt(req.params.id),
+            marketId : parseInt(req.params.id),
             userId
         }
     });

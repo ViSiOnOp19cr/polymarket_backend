@@ -168,12 +168,12 @@ export const leaderboard = async(req:Request, res:Response, next:NextFunction)=>
                 odds:true
             }
         });
-        const userMap:Record<string, number> = {};
+        const userMap:Record<number, number> = {};
         for (const bet of bets){
             const winnings = Math.floor(bet.amount * bet.odds);
             userMap[bet.userId] = (userMap[bet.userId] || 0) + winnings;
         }
-        const userIds = Object.keys(userMap);
+        const userIds = Object.keys(userMap).map(id => parseInt(id));
         const users = await prisma.user.findMany({
             where:{id:{in:userIds}},
             select:{
@@ -188,7 +188,7 @@ export const leaderboard = async(req:Request, res:Response, next:NextFunction)=>
         }));
         leaderboards.sort((a,b) =>b.totalWinnings - a.totalWinnings);
         res.status(200).json({
-            leaderboard
+            leaderboard: leaderboards
         });
     }catch(error){
         res.status(500).json({
