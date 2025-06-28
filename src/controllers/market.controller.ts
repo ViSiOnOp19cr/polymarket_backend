@@ -1,7 +1,14 @@
 import { Request, Response, NextFunction } from "express";
 import { prisma } from "../lib/db";
-
 import { MarketCatagory } from "@prisma/client";
+import { 
+    createMarketSchema, 
+    updateMarketSchema, 
+    idParamSchema, 
+    categoryParamSchema,
+    resolveMarketSchema,
+    searchQuerySchema 
+} from "../lib/validations";
 
 export const createMarket = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
@@ -17,7 +24,17 @@ export const createMarket = async (req: Request, res: Response, next: NextFuncti
             return;
         }
 
-        const { title, description, end_time, catagory } = req.body;
+        // Validate request body
+        const validation = createMarketSchema.safeParse(req.body);
+        if (!validation.success) {
+            res.status(400).json({ 
+                message: "Invalid input",
+                errors: validation.error.errors 
+            });
+            return;
+        }
+
+        const { title, description, end_time, catagory } = validation.data;
         const market = await prisma.market.create({
             data: {
                 title,
@@ -54,16 +71,37 @@ export const updateMarket = async (req: Request, res: Response, next: NextFuncti
             res.status(401).json({ message: "Unauthorized" })
             return;
         }
-        const { title, description, end_time, catagory } = req.body;
+        
+        // Validate ID parameter
+        const paramValidation = idParamSchema.safeParse(req.params);
+        if (!paramValidation.success) {
+            res.status(400).json({ 
+                message: "Invalid market ID",
+                errors: paramValidation.error.errors 
+            });
+            return;
+        }
+        
+        // Validate request body
+        const bodyValidation = updateMarketSchema.safeParse(req.body);
+        if (!bodyValidation.success) {
+            res.status(400).json({ 
+                message: "Invalid input",
+                errors: bodyValidation.error.errors 
+            });
+            return;
+        }
+        
+        const { title, description, end_time, catagory } = bodyValidation.data;
         const market = await prisma.market.update({
             where: {
-                id: parseInt(req.params.id)
+                id: paramValidation.data.id
             },
             data: {
-                title,
-                description,
-                catagory,
-                end_time: new Date(end_time)
+                ...(title && { title }),
+                ...(description && { description }),
+                ...(catagory && { catagory }),
+                ...(end_time && { end_time: new Date(end_time) })
             }
         })
         res.status(200).json({ message: "Market updated successfully", market })
@@ -85,9 +123,19 @@ export const getAllMarkets = async (req: Request, res: Response, next: NextFunct
 }
 export const getMarketById = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
+        // Validate ID parameter
+        const paramValidation = idParamSchema.safeParse(req.params);
+        if (!paramValidation.success) {
+            res.status(400).json({ 
+                message: "Invalid market ID",
+                errors: paramValidation.error.errors 
+            });
+            return;
+        }
+        
         const market = await prisma.market.findUnique({
             where: {
-                id: parseInt(req.params.id)
+                id: paramValidation.data.id
             }
         })
         if (!market) {
@@ -98,6 +146,7 @@ export const getMarketById = async (req: Request, res: Response, next: NextFunct
     }
     catch (error) {
         console.error("Error fetching market:", error);
+        res.status(500).json({ message: "Internal server error" })
     }
 }
 
@@ -137,10 +186,21 @@ export const LockBets = async (req: Request, res: Response, next: NextFunction):
             res.status(401).json({ message: "Unauthorized" })
             return;
         }
+        
+        // Validate ID parameter
+        const paramValidation = idParamSchema.safeParse(req.params);
+        if (!paramValidation.success) {
+            res.status(400).json({ 
+                message: "Invalid market ID",
+                errors: paramValidation.error.errors 
+            });
+            return;
+        }
+        
         //check if market exists
         const market = await prisma.market.findUnique({
             where: {
-                id: parseInt(req.params.id)
+                id: paramValidation.data.id
             }
         })
         if (!market) {
@@ -153,7 +213,7 @@ export const LockBets = async (req: Request, res: Response, next: NextFunction):
         }
         const lockedMarket = await prisma.market.update({
             where: {
-                id: parseInt(req.params.id)
+                id: paramValidation.data.id
             },
             data: {
                 isLocked: true
@@ -168,10 +228,19 @@ export const LockBets = async (req: Request, res: Response, next: NextFunction):
 }
 export const getMarketsByCatagory = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
-        const catagory = req.params.catagory as MarketCatagory;
+        // Validate category parameter
+        const paramValidation = categoryParamSchema.safeParse(req.params);
+        if (!paramValidation.success) {
+            res.status(400).json({ 
+                message: "Invalid category",
+                errors: paramValidation.error.errors 
+            });
+            return;
+        }
+        
         const markets = await prisma.market.findMany({
             where: {
-                catagory: catagory
+                catagory: paramValidation.data.catagory
             }
         })
         res.status(200).json({ message: "Markets fetched successfully", markets })
@@ -185,7 +254,6 @@ export const ResolveMarket = async (req: Request, res: Response, next: NextFunct
     try {
         //check for admin 
         const userId = req.userId;
-        const { outcome } = req.body;
         
         const user = await prisma.user.findUnique({
             where: {
@@ -196,9 +264,32 @@ export const ResolveMarket = async (req: Request, res: Response, next: NextFunct
             res.status(401).json({ message: "unauthorized" })
             return;
         }
+        
+        // Validate ID parameter
+        const paramValidation = idParamSchema.safeParse(req.params);
+        if (!paramValidation.success) {
+            res.status(400).json({ 
+                message: "Invalid market ID",
+                errors: paramValidation.error.errors 
+            });
+            return;
+        }
+        
+        // Validate request body
+        const bodyValidation = resolveMarketSchema.safeParse(req.body);
+        if (!bodyValidation.success) {
+            res.status(400).json({ 
+                message: "Invalid input",
+                errors: bodyValidation.error.errors 
+            });
+            return;
+        }
+        
+        const { outcome } = bodyValidation.data;
+        
         const market = await prisma.market.findUnique({
             where: {
-                id: parseInt(req.params.id)
+                id: paramValidation.data.id
             },
             include:{
                 bets:{
@@ -213,11 +304,6 @@ export const ResolveMarket = async (req: Request, res: Response, next: NextFunct
             res.status(404).json({
                 message: "Market not found or it is resolved already"
             })
-            return;
-        }
-
-        if (outcome !== 'YES' && outcome !== 'NO') {
-            res.status(400).json({ message: "Invalid outcome" });
             return;
         }
 
@@ -236,7 +322,7 @@ export const ResolveMarket = async (req: Request, res: Response, next: NextFunct
             //update market
             await tx.market.update({
                 where: {
-                    id: parseInt(req.params.id)
+                    id: paramValidation.data.id
                 },
                 data: {
                     isOpen: false,
@@ -253,8 +339,7 @@ export const ResolveMarket = async (req: Request, res: Response, next: NextFunct
                         id: bet.id
                     },
                     data: {
-                        status: winner ? "WON" : "LOST",
-                        isLocked: true,
+                        status: winner ? "WON" : "LOST"
                     }
                 });
                 if (winner) {
@@ -302,11 +387,18 @@ export const ResolveMarket = async (req: Request, res: Response, next: NextFunct
 }
 export const searchMarketByTitle = async(req:Request, res:Response, next:NextFunction): Promise<void> =>{
     try{
-        const titleQuery = req.query.title as string;
-        if(!titleQuery){
-            res.status(400).json({message:"Title query is required"});
+        // Validate query parameters
+        const queryValidation = searchQuerySchema.safeParse(req.query);
+        if (!queryValidation.success) {
+            res.status(400).json({ 
+                message: "Invalid query",
+                errors: queryValidation.error.errors 
+            });
             return;
         }
+        
+        const { title: titleQuery } = queryValidation.data;
+        
         const markets = await prisma.market.findMany({
             where:{
                 title:{

@@ -1,9 +1,6 @@
 import { Request, Response, NextFunction } from 'express'
 import jwt from 'jsonwebtoken'
-import dotenv from 'dotenv'
-dotenv.config();
-
-const JWT_SECRET = process.env.JWT_SECRET;
+import { JWT_SECRET } from '../lib/config'
 
 export const userMiddlewares = async (req: Request, res: Response, next: NextFunction) => {
     try {
@@ -23,13 +20,6 @@ export const userMiddlewares = async (req: Request, res: Response, next: NextFun
         if (!token) {
             res.status(401).json({
                 message: 'Token required'
-            });
-            return;
-        }
-
-        if (!JWT_SECRET) {
-            res.status(500).json({
-                message: 'JWT secret not configured'
             });
             return;
         }

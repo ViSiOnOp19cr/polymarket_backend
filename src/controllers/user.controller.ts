@@ -1,29 +1,18 @@
 import { prisma } from "../lib/db"
 import { Request, Response, NextFunction } from 'express';
-import { z } from 'zod'
+import { signupSchema, signinSchema } from '../lib/validations';
 import bcrypt from 'bcrypt'
 import jwt from 'jsonwebtoken';
-import dotenv from 'dotenv'
-dotenv.config();
-
-const JWT_SECRET = process.env.JWT_SECRET;
-
-const validation = z.object({
-    email: z.string()
-            .email("invalid email")
-            .min(3,"email must be min 3 letters"),
-    password: z.string()
-            .min(8,"password must be min 8 letters")
-            .max(30,"password must be max 30 letters")
-})
+import { JWT_SECRET } from '../lib/config';
 
 export const SignUp = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
-        const validateSignup = validation.safeParse(req.body);
+        const validateSignup = signupSchema.safeParse(req.body);
 
         if(!validateSignup.success){
             res.status(400).json({
-                message:"Invalid input"
+                message: "Invalid input",
+                errors: validateSignup.error.errors
             });
             return;
         }
@@ -62,10 +51,11 @@ export const SignUp = async (req: Request, res: Response, next: NextFunction): P
 
 export const SignIn = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try{
-        const Loginvalidation = validation.safeParse(req.body);
+        const Loginvalidation = signinSchema.safeParse(req.body);
         if(!Loginvalidation.success){
             res.status(400).json({
-                message:"invalid input form"
+                message: "Invalid input",
+                errors: Loginvalidation.error.errors
             });
             return;
         }
@@ -88,13 +78,6 @@ export const SignIn = async (req: Request, res: Response, next: NextFunction): P
         if(!hashedpassword){
             res.status(400).json({
                 message:"invalid password"
-            });
-            return;
-        }
-        
-        if (!JWT_SECRET) {
-            res.status(500).json({
-                message:"JWT secret not configured"
             });
             return;
         }
