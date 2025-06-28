@@ -6,7 +6,6 @@
 
 generator client {
   provider = "prisma-client-js"
-  output   = "../src/generated/prisma"
 }
 
 datasource db {
@@ -34,6 +33,7 @@ model Bets {
   status        BetStatus
   amount        Int 
   outcome_chosen      BetOutcome
+  odds          Float    // Odds locked in when this bet was placed
   isLocked      Boolean
   market        Market     @relation(fields:[marketId], references:[id])
   createdAt    DateTime     @default(now())
@@ -46,7 +46,11 @@ model Market {
   isOpen        Boolean
   end_time      DateTime
   bets          Bets[]
+  isLocked      Boolean
+  catagory      MarketCatagory
   outcome       BetOutcome?
+  Oddsyes       Float?    @default(2.0)  // Current odds for YES outcome
+  Oddsno        Float?    @default(2.0)  // Current odds for NO outcome
   createdAt    DateTime    @default(now())
   creatorId     Int
   creator          User    @relation(fields: [creatorId], references: [id])
@@ -65,6 +69,10 @@ enum BetStatus {
   PENDING
   WON
   LOST
+}
+enum MarketCatagory{
+  Sports
+  Esports
 }
 
 enum BetOutcome {
