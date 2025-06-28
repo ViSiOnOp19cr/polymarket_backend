@@ -4,21 +4,23 @@ import { placeBetSchema, idParamSchema } from "../lib/validations";
 
 
 
-export const Placebets = async (req: Request, res: Response, next: NextFunction) => {
+export const Placebets = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
       const userId = req.userId;
   
       if (!userId) {
-        return res.status(401).json({ message: "Unauthorized" });
+        res.status(401).json({ message: "Unauthorized" });
+        return;
       }
   
       // Validate request body
       const validation = placeBetSchema.safeParse(req.body);
       if (!validation.success) {
-        return res.status(400).json({ 
+        res.status(400).json({ 
           message: "Invalid input",
           errors: validation.error.errors 
         });
+        return;
       }
 
       const { amount, marketId, outcome_chosen } = validation.data;
@@ -29,19 +31,23 @@ export const Placebets = async (req: Request, res: Response, next: NextFunction)
       ]);
   
       if (!user) {
-        return res.status(404).json({ message: "User not found" });
+        res.status(404).json({ message: "User not found" });
+        return;
       }
   
       if (!marketExists) {
-        return res.status(404).json({ message: "Market not found" });
+        res.status(404).json({ message: "Market not found" });
+        return;
       }
   
       if (!marketExists.isOpen || marketExists.isLocked) {
-        return res.status(400).json({ message: "Market is closed." });
+        res.status(400).json({ message: "Market is closed." });
+        return;
       }
   
       if (user.balance < amount) {
-        return res.status(400).json({ message: "Insufficient balance" });
+        res.status(400).json({ message: "Insufficient balance" });
+        return;
       }
   
       
@@ -137,7 +143,7 @@ export const Placebets = async (req: Request, res: Response, next: NextFunction)
   };
   
 
-export const Getallbets = async(req:Request, res:Response, next:NextFunction)=>{
+export const Getallbets = async(req:Request, res:Response, next:NextFunction): Promise<void> =>{
     try{
         const userId = req.userId;
         if (!userId) {
@@ -155,7 +161,7 @@ export const Getallbets = async(req:Request, res:Response, next:NextFunction)=>{
         res.status(500).json({message:"Something is wrong"});
     }
 }
-export const GetallbetsMarket = async(req:Request, res:Response, next:NextFunction) =>{
+export const GetallbetsMarket = async(req:Request, res:Response, next:NextFunction): Promise<void> =>{
     try{
     const userId = req.userId;
     if (!userId) {

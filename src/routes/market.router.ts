@@ -1,6 +1,6 @@
 import express, {Request, Response} from "express";
 import { userMiddlewares } from "../middlewares/index";
-import { createMarket, updateMarket, getAllMarkets, ResolveMarket, LockBets, openMarket, getMarketById, getMarketsByCatagory } from "../controllers/market.controller";
+import { createMarket, updateMarket, getAllMarkets, ResolveMarket, LockBets, openMarket, getMarketById, getMarketsByCatagory, searchMarketByTitle } from "../controllers/market.controller";
 
 export const marketRoutes = express.Router();
 
