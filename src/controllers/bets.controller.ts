@@ -3,7 +3,7 @@ import { prisma } from "../lib/db";
 
 
 
-export const Placebets = (req:Request, res:Response, next:NextFunction) =>{
+export const Placebets = async(req:Request, res:Response, next:NextFunction) =>{
     try{
         const userId = req.userId;
         const {amount , marketId , outcome_chosen} = req.body;
@@ -120,9 +120,32 @@ export const Placebets = (req:Request, res:Response, next:NextFunction) =>{
     }
 }
 
-export const Getallbets = (req:Request, res:Response, next:NextFunction)=>{
+export const Getallbets = async(req:Request, res:Response, next:NextFunction)=>{
     try{
         const userId = req.userId;
-        
+        const bets = await prisma.bets.findMany({
+            where:{
+                userId,
+            }
+        });
+        res.status(200).json({bets});
+    }
+    catch(error){
+        res.status(500).json({message:"Something is wrong"});
+    }
+}
+export const GetallbetsMarket = async(req:Request, res:Response, next:NextFunction) =>{
+    try{
+    const userId = req.userId;
+    const bets = await prisma.bets.findMany({
+        where:{
+            id : parseInt(req.params.id)
+        }
+    });
+    res.status(200).json({bets});
+    }catch(error){
+        res.status(500).json({
+            message:"something is wrong. Try again later"
+        })
     }
 }

@@ -300,6 +300,33 @@ export const ResolveMarket = async (req: Request, res: Response, next: NextFunct
         res.status(500).json({ message: "Internal server error" })
     }
 }
+export const searchMarketByTitle = async(req:Request, res:Response, next:NextFunction): Promise<void> =>{
+    try{
+        const titleQuery = req.query.title as string;
+        if(!titleQuery){
+            res.status(400).json({message:"Title query is required"});
+            return;
+        }
+        const markets = await prisma.market.findMany({
+            where:{
+                title:{
+                    contains:titleQuery,
+                    mode:'insensitive'
+                }
+            },
+            orderBy:{
+                createdAt:'desc'
+            }
+        });
+        res.status(200).json({
+            markets
+        });
+    }catch(error){
+        res.status(500).json({
+            message:"somthing is wrong. Try again later."
+        })
+    }
+}
 
 
 

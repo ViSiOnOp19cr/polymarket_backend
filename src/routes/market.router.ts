@@ -12,6 +12,7 @@ marketRoutes.get("/openmarkets", userMiddlewares, openMarket);
 marketRoutes.get("/getmarketsbycatagory/:catagory", userMiddlewares, getMarketsByCatagory);
 marketRoutes.post("/lockbets/:id", userMiddlewares, LockBets);
 marketRoutes.post("/resolvemarket/:id", userMiddlewares, ResolveMarket);
+marketRoutes.get("/search", userMiddlewares, searchMarketByTitle);
 
 
 
