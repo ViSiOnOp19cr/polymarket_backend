@@ -1,10 +1,9 @@
 import express from "express"
 import cors from "cors"
-import { userRoutes } from "./routes/user.router"
-import { marketRoutes } from "./routes/market.router"
-import { betsRoutes } from "./routes/bets.router"
-import { transactionRoutes } from "./routes/transaction.router"
-import { PORT } from "./lib/config"
+import { userRoutes } from "../src/routes/user.router"
+import { marketRoutes } from "../src/routes/market.router"
+import { betsRoutes } from "../src/routes/bets.router"
+import { transactionRoutes } from "../src/routes/transaction.router"
 
 const app = express()
 
@@ -20,7 +19,4 @@ app.use("/api/v1/markets", marketRoutes)
 app.use("/api/v1/bets", betsRoutes)
 app.use("/api/v1/transactions", transactionRoutes)
 
-app.listen(PORT, () => {
-    console.log(`Server is running on port ${PORT}`)
-})
-
+export default app 
