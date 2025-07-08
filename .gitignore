@@ -3,3 +3,6 @@
 .env
 /src/generated/prisma
 /dist
+/logs
+*.log
+.pm2

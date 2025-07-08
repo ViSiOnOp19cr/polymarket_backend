@@ -11,7 +11,17 @@
     "db:push": "prisma db push",
     "db:studio": "prisma studio",
     "prod:build": "npm run db:generate && npm run build",
-    "prod:start": "npm run db:migrate:deploy && npm run start"
+    "prod:start": "npm run db:migrate:deploy && npm run start",
+    "pm2:start": "pm2 start ecosystem.config.js --env production",
+    "pm2:start:staging": "pm2 start ecosystem.config.js --env staging",
+    "pm2:start:dev": "pm2 start ecosystem.config.js --env development",
+    "pm2:stop": "pm2 stop polymarket-backend",
+    "pm2:restart": "pm2 restart polymarket-backend",
+    "pm2:reload": "pm2 reload polymarket-backend",
+    "pm2:delete": "pm2 delete polymarket-backend",
+    "pm2:logs": "pm2 logs polymarket-backend",
+    "pm2:status": "pm2 status",
+    "pm2:monit": "pm2 monit"
   },
   "dependencies": {
     "@prisma/client": "^6.10.1",
